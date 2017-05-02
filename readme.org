@@ -1,0 +1,42 @@
+#+TITLE: An exploration of adult literacy datars for Gregor
+#+OPTIONS: :session R
+
+* Gettin' the datars (Extract)
+#+BEGIN_SRC R
+  library(tidyverse)
+
+  df <- read_csv(url("https://gregor.demo.socrata.com/api/views/5dhh-qisz/rows.csv?accessType=DOWNLOAD"))
+#+END_SRC
+
+
+
+
+* Fixin' the datars (Transform / "Munging")
+#+BEGIN_SRC R
+  ## Reshape bad wide data into tidy data (mostly long)
+  df_long <- df %>%
+      gather(year, rate, -`Adult (15+) literacy rate (%). Total`)
+
+  ## How to get only the complete cases
+  df_comp <- df_long %>%
+      filter(complete.cases(.))
+
+  ## Being hacky and calling year numeric rather than establishing it as
+  ## a date type
+  df_comp$year <- as.numeric(df_comp$year)
+
+  ## Fix the column names
+  names(df_comp) <- c("country", "year", "percent_literate") 
+
+#+END_SRC
+
+#+RESULTS:
+
+
+* Plottin' the datars
+#+BEGIN_SRC R
+  ggplot(df_comp, aes(x=year, y=percent_literate, label=country)) +
+      geom_point() +
+      geom_smooth() +
+      geom_label()
+#+END_SRC
